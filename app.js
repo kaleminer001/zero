@@ -17,7 +17,7 @@ function sleep(ms) {
   const CLICK_NAV_TIMEOUT = 15000;
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     defaultViewport: null,
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--start-maximized"],
   });
