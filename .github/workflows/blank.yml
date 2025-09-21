@@ -1,0 +1,35 @@
+name: IP Check Jobs
+
+on: [push]
+
+jobs:
+  ip_check_job:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job-number: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    steps:
+      - name: Install Redis CLI
+        run: sudo apt-get update && sudo apt-get install -y redis-tools
+
+      - name: Get public IP
+        id: get_ip
+        run: echo "IP=$(curl -s ifconfig.me)" >> $GITHUB_ENV
+
+      - name: Check and register IP in Redis
+        id: ip_check
+        run: |
+          EXISTS=$(redis-cli -h $REDIS_HOST EXISTS $IP)
+          if [ "$EXISTS" -eq 1 ]; then
+            echo "Duplicate IP detected. Canceling job."
+            exit 1
+          else
+            redis-cli -h $REDIS_HOST SET $IP $GITHUB_RUN_ID
+            echo "IP registered: $IP"
+          fi
+
+      - name: Run main command
+        run: |
+          echo "Running command for unique IP $IP"
+          sleep 9999
+          sleep 9999
