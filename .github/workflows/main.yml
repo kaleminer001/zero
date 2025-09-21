@@ -12,6 +12,9 @@ jobs:
       matrix:
         run: [1, 2, 3, 4, 5]   # run job 5 times
     steps:
+      - name: Check IP
+        run: curl ifconfig.io
+     
       - name: Checkout repository
         uses: actions/checkout@v3
 
