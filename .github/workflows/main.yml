@@ -1,34 +1,75 @@
-name: Puppeteer Bot
+name: PTP Browser Runner
 
 on:
+  workflow_dispatch:   # Run manually from Actions tab
   push:
     branches:
       - main
 
 jobs:
-  run-bot:
+  open-browser:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        run: [1, 2, 3, 4, 5]   # run job 5 times
+        job_id: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] # 20 jobs
     steps:
-      - name: Check IP
-        run: curl ifconfig.io
-     
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install Puppeteer
+        run: npm install puppeteer
 
-      - name: Run Puppeteer Script
-        run: node app.js
+      - name: Open 10 sessions
+        run: |
+          node <<'EOF'
+          const puppeteer = require('puppeteer');
+
+          (async () => {
+            const browser = await puppeteer.launch({
+              headless: true,  // set false if you want visible browser (not in GitHub Actions)
+              args: ['--no-sandbox']
+            });
+
+            const baseUrl = "https://adnade.net/ptp/?user=gurusingh&subid=";
+            let pages = [];
+
+            for (let i = 1; i <= 10; i++) {
+              const page = await browser.newPage();
+              await page.goto(baseUrl + `${i}`, { waitUntil: "networkidle2" });
+              pages.push(page);
+              console.log(`Opened session ${i} in job ${process.env.MATRIX_JOB_ID}`);
+            }
+
+            // Keep open for 30s then close
+            await new Promise(r => setTimeout(r, 30000000000000000000));
+
+            await browser.close();
+          })();
+          EOF
         env:
-          RUN_ID: ${{ matrix.run }} # pass unique ID (1–5)
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
+          MATRIX_JOB_ID: ${{ matrix.job_id }}
+      - name: Install Puppeteer
+        run: sleep 9999
+
+      - name: Install Puppeteer
+        run: sleep 9999
+
+      - name: Install Puppeteer
+        run: sleep 9999
+
+      - name: Install Puppeteer
+        run: sleep 9999
+
+      - name: Install Puppeteer
+        run: sleep 9999
+
+      - name: Install Puppeteer
+        run: sleep 9999
+
+      - name: Install Puppeteer
+        run: sleep 9999
+
+      - name: Install Puppeteer
+        run: sleep 9999
