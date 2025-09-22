@@ -1,14 +1,17 @@
-name: PTP Browser Runner
+name: PTP Always Active Sessions
 
 on:
-  workflow_dispatch:   # Run manually from Actions tab
+  workflow_dispatch:   # Manual trigger
   push:
     branches:
       - main
+  schedule:
+    - cron: "0 */6 * * *"   # हर 6 घंटे पर restart होगा
 
 jobs:
-  open-browser:
+  keep-browser:
     runs-on: ubuntu-latest
+    timeout-minutes: 360     # हर job 6h तक चलेगा
     strategy:
       matrix:
         job_id: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] # 20 jobs
@@ -21,55 +24,31 @@ jobs:
       - name: Install Puppeteer
         run: npm install puppeteer
 
-      - name: Open 10 sessions
+      - name: Run 10 permanent sessions
         run: |
           node <<'EOF'
           const puppeteer = require('puppeteer');
 
           (async () => {
             const browser = await puppeteer.launch({
-              headless: true,  // set false if you want visible browser (not in GitHub Actions)
+              headless: true,
               args: ['--no-sandbox']
             });
 
             const baseUrl = "https://adnade.net/ptp/?user=gurusingh&subid=";
-            let pages = [];
 
+            // Open 10 pages and keep them alive
             for (let i = 1; i <= 10; i++) {
-              const page = await browser.newPage();
-              await page.goto(baseUrl + `${i}`, { waitUntil: "networkidle2" });
-              pages.push(page);
-              console.log(`Opened session ${i} in job ${process.env.MATRIX_JOB_ID}`);
+              browser.newPage().then(async (page) => {
+                const subid = (process.env.MATRIX_JOB_ID - 1) * 10 + i;
+                await page.goto(baseUrl + subid, { waitUntil: "networkidle2" });
+                console.log(`✅ Job ${process.env.MATRIX_JOB_ID}: Session ${i} active with subid=${subid}`);
+              });
             }
 
-            // Keep open for 30s then close
-            await new Promise(r => setTimeout(r, 30000000000000000000));
-
-            await browser.close();
+            // Keep Node alive until job timeout (~6h)
+            setInterval(() => {}, 1000);
           })();
           EOF
         env:
           MATRIX_JOB_ID: ${{ matrix.job_id }}
-      - name: Install Puppeteer
-        run: sleep 9999
-
-      - name: Install Puppeteer
-        run: sleep 9999
-
-      - name: Install Puppeteer
-        run: sleep 9999
-
-      - name: Install Puppeteer
-        run: sleep 9999
-
-      - name: Install Puppeteer
-        run: sleep 9999
-
-      - name: Install Puppeteer
-        run: sleep 9999
-
-      - name: Install Puppeteer
-        run: sleep 9999
-
-      - name: Install Puppeteer
-        run: sleep 9999
